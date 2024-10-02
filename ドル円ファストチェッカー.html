@@ -21,6 +21,8 @@
         exchange_rates = []
         timestamps = []
 
+        DATA_MAX_LENGTH = 100
+
         # Alpha VantageのAPIキー（APIキーは実際のものを入力）
         api_key = 'redundant origins'
 
@@ -38,6 +40,11 @@
                 # データをリストに追加
                 exchange_rates.append(exchange_rate)
                 timestamps.append(timestamp)
+
+                # リストが最大サイズを超えたら、古いデータを削除
+                if len(exchange_rates) > MAX_DATA_POINTS:
+                    exchange_rates.pop(0)
+                    timestamps.pop(0)
 
                 # グラフを更新
                 plot_graph()
