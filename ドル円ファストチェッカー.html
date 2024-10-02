@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>USD/JPY Exchange Rate with PyScript</title>
+    <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+    <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+</head>
+<body>
+    <h1>USD/JPY Exchange Rate Over Time</h1>
+
+    <!-- PyScript Python code -->
+    <py-script>
+        import matplotlib.pyplot as plt
+        from js import fetch
+        import asyncio
+        from datetime import datetime
+
+        # グラフ用データを保持するリスト
+        exchange_rates = []
+        timestamps = []
+
+        # Alpha VantageのAPIキー（APIキーは実際のものを入力）
+        api_key = 'redundant origins'
+
+        # 非同期で為替レートを取得する関数
+        async def get_exchange_rate():
+            url = f'https://www.alphavantage.co/query?function=CURRENCY_EXCHANGE_RATE&from_currency=USD&to_currency=JPY&apikey={api_key}'
+            response = await fetch(url)
+            data = await response.json()
+            
+            if 'Realtime Currency Exchange Rate' in data:
+                exchange_rate = float(data['Realtime Currency Exchange Rate']['5. Exchange Rate'])
+                timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                print(f"現在のドル円レート: {exchange_rate} at {timestamp}")
+                
+                # データをリストに追加
+                exchange_rates.append(exchange_rate)
+                timestamps.append(timestamp)
+
+                # グラフを更新
+                plot_graph()
+            else:
+                print("為替レートの取得に失敗しました")
+
+        # グラフ描画関数
+        def plot_graph():
+            plt.figure(figsize=(10, 5))
+            plt.plot(timestamps, exchange_rates, marker='o', linestyle='-', color='b')
+            plt.xlabel('Timestamp')
+            plt.ylabel('Exchange Rate (USD/JPY)')
+            plt.title('USD/JPY Exchange Rate Over Time')
+            plt.xticks(rotation=45, ha='right')
+            plt.tight_layout()
+            plt.show()
+
+        # 5分ごとに為替レートを取得
+        async def run_schedule():
+            while True:
+                await get_exchange_rate()
+                await asyncio.sleep(60 * 60)  # 1時間に1回データ取得
+
+        # スケジュール開始
+        asyncio.ensure_future(run_schedule())
+
+    </py-script>
+</body>
+</html>
